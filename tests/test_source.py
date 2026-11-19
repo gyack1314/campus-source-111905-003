@@ -39,3 +39,12 @@ class Contract(SourceCase):
         self.assertEqual(self.request("/cal/west/renamed.ics")[0],404)
         s,t=self.report('<d:sync-collection xmlns:d="DAV:"><d:sync-token>urn:sync:west:2</d:sync-token></d:sync-collection>')
         self.assertIn("404",E.tostring(t).decode())
+
+    def test_actual_icalendar_parse(self):
+        from icalendar import Calendar
+        calendar=Calendar.from_ical(self.request("/cal/west/course.ics")[2])
+        event=calendar.walk("VEVENT")[0]
+        self.assertEqual(event["DTSTART"].dt.day,25)
+        self.assertEqual(event["DTSTART"].dt.month,10)
+        self.assertEqual(str(event["DTSTART"].dt.tzinfo),"America/New_York")
+        self.assertEqual(event["RRULE"]["COUNT"],[5])
